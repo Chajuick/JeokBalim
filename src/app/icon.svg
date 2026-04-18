@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" fill="#060810"/>
+  <!-- 붓으로 찍은 점 하나 — 적바림 -->
+  <circle cx="16" cy="13" r="3.2" fill="#e8e0cc" opacity="0.92"/>
+  <!-- 수직선 — 내려쓰는 시 -->
+  <rect x="15.2" y="17" width="1.6" height="8" rx="0.8" fill="#e8e0cc" opacity="0.55"/>
+</svg>
