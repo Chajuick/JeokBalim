@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: '적바림',
     description: '짧고 선명한 시들. 적바림.',
-    url: 'https://jeokbalim.vercel.app',
+    url: 'https://jeok-balim.vercel.app',
     siteName: '적바림',
     locale: 'ko_KR',
     type: 'website',
