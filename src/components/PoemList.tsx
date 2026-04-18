@@ -9,6 +9,7 @@ const moodAccent: Record<string, string> = {
   성찰: '#b8a9d9',
   위로: '#8fb3d9',
   그리움: '#d9bc8a',
+  사랑: '#d4cfa0',
 }
 
 export default function PoemList({ poems }: { poems: PoemMeta[] }) {

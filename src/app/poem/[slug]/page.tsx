@@ -12,6 +12,7 @@ export default async function PoemPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
+  const allSlugs = getAllPoemSlugs()
   const poem = await getPoem(slug)
-  return <PoemReader poem={poem} />
+  return <PoemReader poem={poem} allSlugs={allSlugs} />
 }

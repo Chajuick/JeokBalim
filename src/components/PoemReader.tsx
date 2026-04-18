@@ -1,16 +1,69 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import type { Poem } from '@/lib/poems'
 
+// ─── Keyboard hint ─────────────────────────────────────────────
+function KeyboardHint({ visible, hasPrev, hasNext }: { visible: boolean; hasPrev: boolean; hasNext: boolean }) {
+  return (
+    <motion.div
+      className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex gap-5 items-center pointer-events-none select-none"
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: visible ? 0.36 : 0, y: visible ? 0 : 6 }}
+      transition={{ duration: 0.7 }}
+    >
+      <span className={`text-[10px] tracking-[0.3em] text-[#e8e4de] transition-opacity ${hasPrev ? 'opacity-100' : 'opacity-20'}`}>
+        ←
+      </span>
+      <span className="text-[10px] tracking-[0.35em] text-[#e8e4de]">esc 목록</span>
+      <span className={`text-[10px] tracking-[0.3em] text-[#e8e4de] transition-opacity ${hasNext ? 'opacity-100' : 'opacity-20'}`}>
+        →
+      </span>
+    </motion.div>
+  )
+}
+
 // ─── Scene router ─────────────────────────────────────────────
-export default function PoemReader({ poem }: { poem: Poem }) {
-  if (poem.slug === '001') return <LightScene poem={poem} />
-  if (poem.slug === '002') return <RainScene poem={poem} />
-  if (poem.slug === '003') return <SteamScene poem={poem} />
-  return <DefaultScene poem={poem} />
+export default function PoemReader({ poem, allSlugs = [] }: { poem: Poem; allSlugs?: string[] }) {
+  const router = useRouter()
+  const [hintVisible, setHintVisible] = useState(true)
+
+  const idx = allSlugs.indexOf(poem.slug)
+  const prevSlug = idx > 0 ? allSlugs[idx - 1] : null
+  const nextSlug = idx >= 0 && idx < allSlugs.length - 1 ? allSlugs[idx + 1] : null
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') router.push('/')
+      if (e.key === 'ArrowLeft'  && prevSlug) router.push(`/poem/${prevSlug}`)
+      if (e.key === 'ArrowRight' && nextSlug) router.push(`/poem/${nextSlug}`)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [router, prevSlug, nextSlug])
+
+  useEffect(() => {
+    const t = setTimeout(() => setHintVisible(false), 3000)
+    return () => clearTimeout(t)
+  }, [])
+
+  let scene: React.ReactNode
+  if (poem.slug === '001') scene = <LightScene poem={poem} />
+  else if (poem.slug === '002') scene = <RainScene poem={poem} />
+  else if (poem.slug === '003') scene = <SteamScene poem={poem} />
+  else if (poem.slug === '004') scene = <MoonScene poem={poem} />
+  else if (poem.slug === '005') scene = <WeaponScene poem={poem} />
+  else scene = <DefaultScene poem={poem} />
+
+  return (
+    <>
+      {scene}
+      <KeyboardHint visible={hintVisible} hasPrev={!!prevSlug} hasNext={!!nextSlug} />
+    </>
+  )
 }
 
 // ─── Shared stanza block ───────────────────────────────────────
@@ -558,6 +611,509 @@ function SteamScene({ poem }: { poem: Poem }) {
             </div>
 
             <GukbapBowl />
+            <Link
+              href="/"
+              className="text-[11px] tracking-[0.4em] opacity-22 hover:opacity-55 transition-opacity duration-300"
+            >
+              ← 목록
+            </Link>
+          </motion.div>
+        </div>
+      </div>
+    </main>
+  )
+}
+
+// ─── 004 달빛 · MoonScene ─────────────────────────────────────
+// 보름달 → 스크롤 내릴수록 초승달 / 맨 아래 도시 야경
+
+type Star = { id: number; x: number; y: number; size: number; delay: number; duration: number }
+
+function MoonStars() {
+  const [stars, setStars] = useState<Star[]>([])
+  useEffect(() => {
+    setStars(
+      Array.from({ length: 55 }, (_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 65,
+        size: 0.6 + Math.random() * 1.6,
+        delay: Math.random() * 5,
+        duration: 2.5 + Math.random() * 4,
+      }))
+    )
+  }, [])
+  return (
+    <div className="fixed inset-0 pointer-events-none z-0">
+      {stars.map((s) => (
+        <motion.div
+          key={s.id}
+          className="absolute rounded-full"
+          style={{
+            left: `${s.x}%`,
+            top: `${s.y}%`,
+            width: s.size,
+            height: s.size,
+            background: 'rgba(240,235,220,0.8)',
+          }}
+          animate={{ opacity: [0.2, 0.9, 0.35, 0.75, 0.2] }}
+          transition={{ duration: s.duration, delay: s.delay, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      ))}
+    </div>
+  )
+}
+
+// 건물 데이터: [x, topY, width, hasAntenna]
+const CITY_BUILDINGS: [number, number, number, boolean][] = [
+  [0,   196, 34, false],
+  [36,  142, 26, true ],
+  [64,  170, 40, false],
+  [106, 154, 20, false],
+  [128, 115, 34, true ],
+  [164, 180, 28, false],
+  [194, 148, 22, false],
+  [218,  82, 46, true ],   // 높은 빌딩
+  [266, 163, 20, false],
+  [288, 130, 32, false],
+  [322, 172, 20, false],
+  [344,  96, 42, true ],
+  [388, 160, 28, false],
+  [418,  64, 52, true ],   // 가장 높은 빌딩 (중심)
+  [472, 152, 22, false],
+  [496, 122, 36, false],
+  [534, 168, 18, false],
+  [554,  90, 44, true ],
+  [600, 158, 22, false],
+  [624, 134, 32, false],
+  [658, 178, 24, false],
+  [684,  78, 42, true ],   // 높은 빌딩
+  [728, 148, 26, false],
+  [756, 168, 20, false],
+  [778, 103, 46, true ],
+  [826, 153, 30, false],
+  [858, 128, 32, false],
+  [892, 170, 26, false],
+  [920, 148, 30, false],
+  [952, 188, 50, false],   // 끝까지 채움
+]
+
+function CitySkyline({ glow }: { glow: number }) {
+  const VIEW_H = 270
+  const COLORS = ['#050c18', '#06101c', '#07111e', '#050d17', '#060f1a', '#07121f']
+
+  return (
+    <div className="w-full">
+      <svg
+        viewBox="0 0 1000 270"
+        preserveAspectRatio="xMidYMax slice"
+        style={{ width: '100%', height: '230px', display: 'block' }}
+      >
+        {/* 지평선 글로우 */}
+        <ellipse cx="500" cy="266" rx="500" ry="52"
+          fill={`rgba(55,30,8,${glow * 1.1})`} />
+
+        {/* 건물들 */}
+        {CITY_BUILDINGS.map(([bx, top, bw, hasAntenna], i) => (
+          <g key={i}>
+            <rect x={bx} y={top} width={bw} height={VIEW_H - top}
+              fill={COLORS[i % COLORS.length]} />
+            {hasAntenna && (
+              <rect x={bx + Math.floor(bw / 2) - 2} y={top - 14} width={4} height={16}
+                fill={COLORS[(i + 2) % COLORS.length]} />
+            )}
+          </g>
+        ))}
+
+        {/* 창문 불빛 — 결정론적 생성 */}
+        {CITY_BUILDINGS.flatMap(([bx, top, bw]: [number, number, number, boolean], bi) => {
+          const rows = Math.floor((VIEW_H - top - 26) / 19)
+          const cols = Math.max(1, Math.floor((bw - 6) / 12))
+          const wins = []
+          for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+              const h = (bi * 31 + r * 13 + c * 7) % 10
+              if (h < 7) {
+                wins.push(
+                  <rect
+                    key={`${bi}-${r}-${c}`}
+                    x={bx + 4 + c * 12}
+                    y={top + 20 + r * 19}
+                    width={5}
+                    height={7}
+                    fill={`rgba(255,210,100,${0.06 + (h % 4) * 0.055 + glow * 0.30})`}
+                  />
+                )
+              }
+            }
+          }
+          return wins
+        })}
+
+        {/* 바닥 */}
+        <rect x="0" y="267" width="1000" height="6" fill="#03060d" />
+      </svg>
+    </div>
+  )
+}
+
+function MoonScene({ poem }: { poem: Poem }) {
+  const stanzas = poem.content.trim().split(/\n\n+/)
+  const [progress, setProgress] = useState(0)
+  const MOON = 175  // 달 크기 px
+
+  useEffect(() => {
+    const onScroll = () => {
+      const el = document.documentElement
+      setProgress(el.scrollTop / (el.scrollHeight - el.clientHeight) || 0)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  // 달 위상 — SVG mask로 자연스러운 terminator 곡선
+  const r = MOON / 2
+  // terminatorRx: r(보름) → 0(반달) → r(초승)
+  const terminatorRx = Math.abs(r * (1 - 2 * progress))
+  const isGibbous = progress < 0.5
+  // 달 주변 글로우 — 초승이 될수록 약해짐
+  const moonGlow = 0.18 - progress * 0.14
+  // 도시 불빛 — 스크롤 끝에 빛남
+  const cityGlow = Math.pow(Math.max(0, progress - 0.6) / 0.4, 1.5)
+
+  return (
+    <main className="relative bg-[#04090f] text-[#f0ede8]">
+      <BackNav />
+
+      {/* 별 */}
+      <MoonStars />
+
+      {/* 달 — 고정 우상단 (SVG mask로 자연스러운 위상) */}
+      <div
+        className="fixed pointer-events-none z-10"
+        style={{ top: '7vh', right: '7vw', width: MOON, height: MOON }}
+      >
+        <svg width={MOON} height={MOON} style={{ overflow: 'visible' }}>
+          <defs>
+            <radialGradient id="moon-rg" cx="38%" cy="34%">
+              <stop offset="0%"   stopColor="rgba(255,252,210,0.72)" />
+              <stop offset="45%"  stopColor="rgba(248,228,130,0.60)" />
+              <stop offset="100%" stopColor="rgba(228,198,80,0.44)"  />
+            </radialGradient>
+            <filter id="mglow" x="-100%" y="-100%" width="300%" height="300%">
+              <feGaussianBlur stdDeviation="24" />
+            </filter>
+            <mask id="mphase">
+              <circle cx={r} cy={r} r={r} fill="white" />
+              <rect x={r} y={0} width={r} height={MOON} fill="black" />
+              <ellipse cx={r} cy={r} rx={terminatorRx} ry={r} fill={isGibbous ? 'white' : 'black'} />
+            </mask>
+          </defs>
+          {/* 글로우 — 위상에 맞게 마스킹 */}
+          <circle cx={r} cy={r} r={r}
+            fill={`rgba(248,220,100,${moonGlow * 3})`}
+            filter="url(#mglow)"
+            mask="url(#mphase)"
+          />
+          {/* 달 본체 */}
+          <circle cx={r} cy={r} r={r}
+            fill="url(#moon-rg)"
+            mask="url(#mphase)"
+          />
+        </svg>
+      </div>
+
+      {/* 도시 광원 배경 */}
+      <div
+        className="fixed bottom-0 left-0 right-0 pointer-events-none z-0"
+        style={{
+          height: '40vh',
+          background: `linear-gradient(to top, rgba(45,22,5,${cityGlow * 0.7}) 0%, transparent 100%)`,
+        }}
+      />
+
+      {/* 스크롤 콘텐츠 */}
+      <div className="relative z-10">
+        {/* 제목 */}
+        <div className="min-h-screen flex flex-col justify-center px-8 md:px-16 lg:px-24">
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.44 }}
+            transition={{ delay: 0.4, duration: 1 }}
+            className="text-[11px] tracking-[0.5em] mb-6"
+          >
+            {new Date(poem.date).getFullYear()} · {poem.mood}
+          </motion.p>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+            className="font-serif text-4xl md:text-5xl leading-snug"
+          >
+            {poem.title}
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.28 }}
+            transition={{ delay: 1.4, duration: 0.8 }}
+            className="mt-12 text-[10px] tracking-[0.55em]"
+          >
+            scroll
+          </motion.p>
+        </div>
+
+        {/* 연 */}
+        <div className="max-w-[480px] mx-auto px-8">
+          {stanzas.map((stanza, i) => (
+            <section key={i} className="min-h-[55vh] flex items-center">
+              <StanzaBlock stanza={stanza} />
+            </section>
+          ))}
+        </div>
+
+        {/* 도시 야경 — 맨 아래 고정, 링크도 그 위에 */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: '-60px' }}
+          transition={{ duration: 1.8 }}
+          className="relative"
+        >
+          <CitySkyline glow={cityGlow} />
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
+            <Link
+              href="/"
+              className="text-[11px] tracking-[0.4em] opacity-22 hover:opacity-55 transition-opacity duration-300"
+            >
+              ← 목록
+            </Link>
+          </div>
+        </motion.div>
+      </div>
+    </main>
+  )
+}
+
+// ─── 005 연마 · WeaponScene ────────────────────────────────────
+// 겉면 계속 연마 중 — 스크롤할수록 수평 스캔선이 빨라지고 많아짐
+
+// 스캔선 정의: y위치(%), 속도, 폭, 몇% 스크롤부터 등장, 최대 불투명도, 방향
+const SCAN_DEFS = [
+  { id: 0,  y: 18, dur: 7.5, delay: 0.0, w: 26, minP: 0.00, op: 0.16, rev: false },
+  { id: 1,  y: 76, dur: 9.2, delay: 3.4, w: 20, minP: 0.00, op: 0.13, rev: true  },
+  { id: 2,  y: 42, dur: 3.8, delay: 0.7, w: 30, minP: 0.28, op: 0.22, rev: false },
+  { id: 3,  y: 89, dur: 4.1, delay: 1.8, w: 22, minP: 0.28, op: 0.18, rev: true  },
+  { id: 4,  y: 12, dur: 2.2, delay: 0.3, w: 33, minP: 0.55, op: 0.26, rev: false },
+  { id: 5,  y: 58, dur: 1.9, delay: 0.9, w: 28, minP: 0.55, op: 0.24, rev: false },
+  { id: 6,  y: 32, dur: 2.6, delay: 1.3, w: 25, minP: 0.55, op: 0.20, rev: true  },
+  { id: 7,  y: 93, dur: 2.0, delay: 0.4, w: 24, minP: 0.55, op: 0.18, rev: true  },
+  { id: 8,  y: 50, dur: 1.1, delay: 0.1, w: 36, minP: 0.80, op: 0.30, rev: false },
+  { id: 9,  y: 66, dur: 1.0, delay: 0.5, w: 30, minP: 0.80, op: 0.28, rev: false },
+  { id: 10, y: 25, dur: 1.4, delay: 0.6, w: 28, minP: 0.80, op: 0.24, rev: true  },
+  { id: 11, y: 82, dur: 1.2, delay: 0.2, w: 32, minP: 0.80, op: 0.22, rev: true  },
+]
+
+function ScanLines({ progress }: { progress: number }) {
+  return (
+    <div
+      className="fixed inset-0 pointer-events-none z-20"
+      style={{ mixBlendMode: 'screen' }}
+    >
+      {SCAN_DEFS.map((s) => {
+        const opacity = progress >= s.minP
+          ? s.op * Math.min(1, (progress - s.minP) / 0.14)
+          : 0
+
+        const fromX = s.rev ? '100vw'      : `-${s.w}vw`
+        const toX   = s.rev ? `-${s.w}vw` : '100vw'
+
+        return (
+          <motion.div
+            key={s.id}
+            style={{
+              position: 'absolute',
+              top: `${s.y}%`,
+              height: '1.5px',
+              width: `${s.w}vw`,
+              background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.92) 50%, transparent 100%)',
+              opacity,
+            }}
+            initial={{ x: fromX }}
+            animate={{ x: toX }}
+            transition={{
+              duration: s.dur,
+              delay: s.delay,
+              repeat: Infinity,
+              repeatType: 'loop',
+              ease: 'linear',
+            }}
+          />
+        )
+      })}
+    </div>
+  )
+}
+
+// 마지막 연 등장 시 한꺼번에 쏴 지나가는 스캔선 burst
+function FinalBurst() {
+  const ref = useRef<HTMLDivElement>(null)
+  const [fired, setFired] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setFired(true) },
+      { threshold: 0.45 }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+
+  return (
+    <div ref={ref} className="absolute inset-0">
+      {fired && (
+        <div
+          className="fixed inset-0 pointer-events-none"
+          style={{ zIndex: 30, mixBlendMode: 'screen' }}
+        >
+          {Array.from({ length: 20 }, (_, i) => (
+            <motion.div
+              key={i}
+              style={{
+                position: 'absolute',
+                top: `${(i / 19) * 100}%`,
+                height: '1px',
+                width: '70vw',
+                background: `linear-gradient(90deg, transparent, rgba(255,255,255,${0.35 + (i % 5) * 0.08}) 50%, transparent)`,
+              }}
+              initial={{ x: '-70vw', opacity: 1 }}
+              animate={{ x: '100vw', opacity: 0 }}
+              transition={{ duration: 0.5, delay: i * 0.022, ease: 'easeIn' }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function GrindDivider() {
+  return (
+    <div className="flex justify-center py-10">
+      <motion.div
+        style={{ height: '0.5px', background: 'rgba(232,228,222,0.12)' }}
+        initial={{ width: 0 }}
+        whileInView={{ width: 200 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5, ease: 'linear' }}
+      />
+    </div>
+  )
+}
+
+function WeaponScene({ poem }: { poem: Poem }) {
+  const segments = poem.content.trim().split(/\n\n+/)
+  const [progress, setProgress] = useState(0)
+
+  useEffect(() => {
+    const onScroll = () => {
+      const el = document.documentElement
+      setProgress(el.scrollTop / (el.scrollHeight - el.clientHeight) || 0)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  // 배경: 차가운 어둠 → 은은한 핏빛 어둠
+  const bgR = Math.round(7  + progress * 9)
+  const bgG = Math.round(7  - progress * 3)
+  const bgB = Math.round(12 - progress * 8)
+
+  return (
+    <main
+      className="relative text-[#e8e4de]"
+      style={{ background: `rgb(${bgR},${bgG},${bgB})` }}
+    >
+      <BackNav />
+      <ScanLines progress={progress} />
+
+      <div className="relative z-10">
+        {/* 제목 */}
+        <div className="min-h-screen flex flex-col justify-center px-8 md:px-16 max-w-[520px] mx-auto">
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.35 }}
+            transition={{ delay: 0.4, duration: 1 }}
+            className="text-[11px] tracking-[0.5em] mb-6"
+          >
+            {new Date(poem.date).getFullYear()} · {poem.mood}
+          </motion.p>
+          <motion.h1
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+            className="font-serif text-4xl md:text-5xl leading-snug"
+          >
+            {poem.title}
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.22 }}
+            transition={{ delay: 1.4, duration: 0.8 }}
+            className="mt-12 text-[10px] tracking-[0.55em]"
+          >
+            scroll
+          </motion.p>
+        </div>
+
+        {/* 시 본문 */}
+        <div className="max-w-[480px] mx-auto px-8">
+          {segments.map((seg, i) => {
+            const trimmed = seg.trim()
+            if (trimmed === '—') return <GrindDivider key={i} />
+
+            const isVoid  = trimmed === '내부'
+            const isFinal = i === segments.length - 1
+
+            return (
+              <section
+                key={i}
+                className={`relative flex ${isVoid ? 'items-start pt-20 min-h-[105vh]' : 'items-center min-h-[52vh]'}`}
+              >
+                {isFinal && <FinalBurst />}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true, margin: '-60px' }}
+                  transition={{ duration: 0.7, ease: 'easeOut' }}
+                >
+                  {trimmed.split('\n').filter(Boolean).map((line, j) => (
+                    <motion.p
+                      key={j}
+                      initial={{ opacity: 0, y: 5 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.55, delay: j * 0.1 }}
+                      className="font-serif text-[1.15rem] leading-[2.4] text-[#e8e4de]"
+                    >
+                      {line}
+                    </motion.p>
+                  ))}
+                </motion.div>
+              </section>
+            )
+          })}
+        </div>
+
+        {/* 끝 */}
+        <div className="min-h-[40vh] flex flex-col justify-center items-center pb-32">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1 }}
+          >
             <Link
               href="/"
               className="text-[11px] tracking-[0.4em] opacity-22 hover:opacity-55 transition-opacity duration-300"
