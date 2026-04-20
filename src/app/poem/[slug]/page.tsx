@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { getAllPoemSlugs, getPoem } from '@/lib/poems'
-import PoemReader from '@/components/PoemReader'
+import PoemReader from '@/components/poem/PoemReader'
 
 export async function generateStaticParams() {
   const slugs = getAllPoemSlugs()

@@ -14,6 +14,12 @@ export const metadata: Metadata = {
   description: '짧고 선명한 시들. 적바림.',
   keywords: ['시', '시집', '한국시', '현대시', '적바림'],
   authors: [{ name: '적바림' }],
+  appleWebApp: {
+    capable: true,
+    title: '적바림',
+    statusBarStyle: 'black-translucent',
+  },
+
   openGraph: {
     title: '적바림',
     description: '짧고 선명한 시들. 적바림.',
@@ -40,7 +46,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko" className={notoSerifKR.variable} data-scroll-behavior="smooth">
-      <body>{children}</body>
+      <body className="antialiased">{children}</body>
     </html>
   )
 }

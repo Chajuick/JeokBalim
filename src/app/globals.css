@@ -8,6 +8,11 @@
   box-sizing: border-box;
 }
 
+html, body {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
 html {
   scroll-behavior: smooth;
 }

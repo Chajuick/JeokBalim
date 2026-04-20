@@ -1,5 +1,5 @@
 import { getAllPoems } from '@/lib/poems'
-import PoemList from '@/components/PoemList'
+import PoemList from '@/components/poem/PoemList'
 
 export default function Home() {
   const poems = getAllPoems()
