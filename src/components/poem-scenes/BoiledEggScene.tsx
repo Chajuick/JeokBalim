@@ -131,28 +131,49 @@ export default function BoiledEggScene({ poem }: { poem: Poem }) {
         }
       `}} />
 
-      {/* 끓는 물의 공간 */}
-      <div className="fixed bottom-0 left-0 right-0 h-[88vh] z-0 pointer-events-none flex flex-col">
-        
-        {/* 부드러운 화이트 수면 (최적화: CSS animation 사용) */}
-        <div className="absolute top-0 left-0 w-full h-[80px] -translate-y-[79px] overflow-hidden opacity-40">
+      {/* 끓는 물의 공간 — 컨테이너 자체에 mask로 경계 소거 */}
+      <div
+        className="fixed bottom-0 left-0 right-0 h-[92vh] z-0 pointer-events-none"
+        style={{
+          maskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 7%, black 18%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 7%, black 18%)',
+        }}
+      >
+        {/* 수면 파도 — 상하 모두 fade로 경계 소거 */}
+        <div
+          className="absolute top-0 left-0 w-full h-[80px] z-10"
+          style={{
+            maskImage: 'linear-gradient(to bottom, black 20%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, black 20%, transparent 100%)',
+          }}
+        >
           <svg viewBox="0 0 1200 80" preserveAspectRatio="none" className="w-full h-full">
+            <defs>
+              <linearGradient id="wg1" x1="0" y1="40" x2="0" y2="80" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="rgba(255,255,255,0.3)" />
+                <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+              </linearGradient>
+              <linearGradient id="wg2" x1="0" y1="30" x2="0" y2="80" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="rgba(255,255,255,0.45)" />
+                <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+              </linearGradient>
+            </defs>
             <path
               d="M 0 40 Q 150 60 300 40 T 600 40 T 900 40 T 1200 40 T 1500 40 T 1800 40 L 1800 80 L 0 80 Z"
-              fill="rgba(255, 255, 255, 0.3)"
+              fill="url(#wg1)"
               style={{ animation: 'waveMove 10s linear infinite', willChange: 'transform' }}
             />
             <path
               d="M 0 50 Q 150 30 300 50 T 600 50 T 900 50 T 1200 50 T 1500 50 T 1800 50 L 1800 80 L 0 80 Z"
-              fill="rgba(255, 255, 255, 0.5)"
+              fill="url(#wg2)"
               style={{ animation: 'waveMove 7s linear infinite', willChange: 'transform' }}
             />
           </svg>
         </div>
 
-        {/* 유백색 물 속 (최적화: 무거운 backdrop-blur 제거, gradient만으로 질감 표현) */}
-        <div className="flex-1 w-full relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-transparent pointer-events-none" />
+        {/* 유백색 물 속 */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] via-white/[0.02] to-transparent pointer-events-none" />
           
           <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
             {sceneData.bubbles.map((bubble) => (

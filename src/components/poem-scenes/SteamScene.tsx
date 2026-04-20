@@ -398,12 +398,12 @@ export default function SteamScene({ poem }: { poem: Poem }) {
             </div>
 
             {/* 소금통 */}
-            <div className="absolute left-[-66px] bottom-[24px]">
+            <div className="absolute left-[-44px] sm:left-[-66px] bottom-[24px]">
               <SaltShaker />
             </div>
 
             {/* 김치 종지 */}
-            <div className="absolute right-[-92px] bottom-[6px]">
+            <div className="absolute right-[-56px] sm:right-[-92px] bottom-[6px]">
               <KimchiDish />
             </div>
 
