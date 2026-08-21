@@ -1,0 +1,91 @@
+{
+  "version": "2.0",
+  "lastUpdated": "2026-04-20T04:26:38.183Z",
+  "activeFeatures": [
+    "jeokbalim",
+    "poem-scenes"
+  ],
+  "primaryFeature": "jeokbalim",
+  "features": {
+    "jeokbalim": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-20T04:04:15.143Z",
+        "lastUpdated": "2026-04-20T04:07:22.020Z"
+      },
+      "lastFile": "C:\\Users\\USER\\Desktop\\Project\\private\\JeokBalim\\jeokbalim\\src\\app\\layout.tsx"
+    },
+    "poem-scenes": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-04-20T04:14:06.480Z",
+        "lastUpdated": "2026-04-20T04:26:38.183Z"
+      },
+      "lastFile": "C:\\Users\\USER\\Desktop\\Project\\private\\JeokBalim\\jeokbalim\\src\\components\\poem-scenes\\BoiledEggScene.tsx"
+    }
+  },
+  "pipeline": {
+    "currentPhase": 1,
+    "level": "Dynamic",
+    "phaseHistory": []
+  },
+  "session": {
+    "startedAt": "2026-04-20T03:01:37.430Z",
+    "onboardingCompleted": false,
+    "lastActivity": "2026-04-20T04:26:38.183Z"
+  },
+  "history": [
+    {
+      "timestamp": "2026-04-20T04:04:15.143Z",
+      "feature": "jeokbalim",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-20T04:07:22.020Z",
+      "feature": "jeokbalim",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-20T04:14:06.480Z",
+      "feature": "poem-scenes",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-20T04:15:44.693Z",
+      "feature": "poem-scenes",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-20T04:19:39.448Z",
+      "feature": "poem-scenes",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-20T04:25:36.182Z",
+      "feature": "poem-scenes",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-04-20T04:26:38.183Z",
+      "feature": "poem-scenes",
+      "phase": "do",
+      "action": "updated"
+    }
+  ]
+}

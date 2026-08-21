@@ -10,6 +10,7 @@ import WeaponScene from '@/components/poem-scenes/WeaponScene'
 import WindowTreeScene from '@/components/poem-scenes/WindowTreeScene'
 import BoiledEggScene from '@/components/poem-scenes/BoiledEggScene'
 import SiliconScene from '@/components/poem-scenes/SiliconScene'
+import PaperFoldScene from '@/components/poem-scenes/PaperFoldScene'
 
 export const poemSceneMap: Record<string, ComponentType<{ poem: Poem }>> = {
   '001': LightScene,
@@ -20,6 +21,7 @@ export const poemSceneMap: Record<string, ComponentType<{ poem: Poem }>> = {
   '006': WindowTreeScene,
   '007': BoiledEggScene,
   '008': SiliconScene,
+  '009': PaperFoldScene,
 }
 
 export { DefaultScene }
